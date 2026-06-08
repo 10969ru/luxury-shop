@@ -6,7 +6,7 @@ import { products } from "../../data/products";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 
-// シンプルな通知コンポーネントをここに定義
+// 1. Toastコンポーネントはそのまま
 const Toast = ({ message, onClose }: { message: string, onClose: () => void }) => {
   useEffect(() => {
     const timer = setTimeout(onClose, 2000);
@@ -20,35 +20,34 @@ const Toast = ({ message, onClose }: { message: string, onClose: () => void }) =
   );
 };
 
+// 2. export default はこれ1つだけにする
 export default function ProductDetail() {
   const params = useParams();
   const id = Number(params.id);
   const { addToCart } = useCart();
-  const { wishlist, toggleWishlist } = useWishlist(); // 既存のContextを利用
+  const { wishlist, toggleWishlist } = useWishlist();
 
   const product = products.find((p) => p.id === id);
   const [quantity, setQuantity] = useState(1);
   const [toast, setToast] = useState<string | null>(null);
 
-  // お気に入りかどうかの判定（wishlist配列に含まれているか）
   const isFavorite = wishlist.includes(id);
 
   const toggleFavorite = () => {
-    toggleWishlist(id); // ここでContextの関数を呼ぶと、即座に連動します
+    toggleWishlist(id);
     if (!isFavorite) setToast("禁域の果実を愛好リストへ加えた。");
   };
   
-  // カート追加処理
-  const handleAddToCart = () => {
-    addToCart({ ...product, quantity });
-    setToast("カートに禁域の果実を積載した。");
-  };
-
+// 修正後
+const handleAddToCart = () => {
+  // 第2引数に quantity を追加して呼び出す
+  addToCart(product, quantity); 
+  setToast("カートに禁域の果実を積載した。");
+};
   if (!product) return <div className="p-20 text-center">商品が見つかりません</div>;
 
   return (
     <div className="min-h-screen bg-black text-white p-6 pt-32 flex flex-col items-center">
-      {/* 通知カードの表示 */}
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
 
       <div className="max-w-2xl w-full">

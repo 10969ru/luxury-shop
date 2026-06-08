@@ -36,7 +36,6 @@ export function Header() {
     };
   }, [lastScrollY]);
 
-  // トップページ以外ならBACKボタンを表示
   const showBackButton = pathname !== "/";
 
   return (
@@ -45,7 +44,6 @@ export function Header() {
         show ? "translate-y-0" : "-translate-y-full"
       }`}
     >
-      {/* 左側：Backボタン */}
       <div className="flex justify-start">
         {showBackButton && (
           <button 
@@ -57,7 +55,6 @@ export function Header() {
         )}
       </div>
 
-      {/* 真ん中：ロゴ */}
       <div className="flex justify-center">
         <h1 
           onClick={() => router.push('/')} 
@@ -67,35 +64,23 @@ export function Header() {
         </h1>
       </div>
 
-      {/* 右側：アイコン ＋ ボタン */}
       <div className="flex justify-end items-center gap-6">
-        {user && (
-          <div className="flex gap-4 text-lg items-center">
-            <button 
-              onClick={() => router.push('/wishlist')} 
-              className="hover:text-zinc-400 transition"
-            >
-              ♡
-            </button>
-            <button 
-            onClick={() => router.push('/cart')} // ここを追加！
-            className="hover:text-zinc-400 transition"
-            >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        {user ? (
+          <>
+            <button onClick={() => router.push('/wishlist')} className="hover:text-zinc-400 transition">♡</button>
+            <button onClick={() => router.push('/cart')} className="hover:text-zinc-400 transition">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-            </svg>
+              </svg>
             </button>
-          </div>
-        )}
-        
-        {user ? (
-          <button 
-            onClick={() => router.push('/wallet')} 
-            className="text-[10px] border border-white px-3 py-1 text-white hover:bg-white hover:text-black transition tracking-tighter"
-          >
-            MY PAGE
-          </button>
+            <button 
+              onClick={() => router.push('/mypage')} 
+              className="text-[10px] border border-white px-3 py-1 text-white hover:bg-white hover:text-black transition tracking-tighter"
+            >
+              MY PAGE
+            </button>
+          </>
         ) : (
           <button 
             onClick={() => router.push('/login')} 

@@ -1,6 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// 環境変数が存在しない場合にエラーを出しやすくしておく
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Supabaseの環境変数が設定されていません。");
+}
+
+// サーバー側・クライアント側で重複して作成されないよう制御しつつ、
+// アプリ全体で唯一の「窓口」となるクライアントを作成
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
