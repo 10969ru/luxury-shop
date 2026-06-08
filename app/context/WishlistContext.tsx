@@ -6,23 +6,40 @@ const WishlistContext = createContext<any>(null);
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const [wishlist, setWishlist] = useState<number[]>([]);
 
+  // マウント時にストレージから読み込み
   useEffect(() => {
     const saved = localStorage.getItem("wishlist");
-    if (saved) setWishlist(JSON.parse(saved));
+    if (saved) {
+      try {
+        setWishlist(JSON.parse(saved));
+      } catch (e) {
+        console.error("ウィッシュリストの読み込みに失敗しました");
+      }
+    }
   }, []);
 
+  // 状態変更時にストレージへ保存
+  useEffect(() => {
+    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  // 個別切り替え用
   const toggleWishlist = (id: number) => {
-    const next = wishlist.includes(id) ? wishlist.filter(i => i !== id) : [...wishlist, id];
-    setWishlist(next);
-    localStorage.setItem("wishlist", JSON.stringify(next));
+    setWishlist((prev) => 
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
   };
 
-  return (
-    <WishlistContext.Provider value={{ wishlist, toggleWishlist }}>
-      {children}
-    </WishlistContext.Provider>
-  );
-}
+  // ★追加：一括削除用の関数
+  const removeFromWishlist = (ids: number[]) => {
+    setWishlist((prev) => prev.filter((id) => !ids.includes(id)));
+  };
 
-// ここで1回だけエクスポートします
+// app/context/WishlistContext.tsx 内の戻り値
+return (
+  <WishlistContext.Provider value={{ wishlist, toggleWishlist, removeFromWishlist }}>
+    {children}
+  </WishlistContext.Provider>
+);}
+
 export const useWishlist = () => useContext(WishlistContext);

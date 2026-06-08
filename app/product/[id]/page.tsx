@@ -1,54 +1,41 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { products } from "../../data/products";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
+import { useMessage } from "../../context/MessageContext"; // インポート
 
-// 1. Toastコンポーネントはそのまま
-const Toast = ({ message, onClose }: { message: string, onClose: () => void }) => {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 2000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  return (
-    <div className="fixed top-10 right-10 z-50 bg-zinc-900 border border-zinc-700 text-white p-4 rounded shadow-2xl tracking-widest">
-      {message}
-    </div>
-  );
-};
-
-// 2. export default はこれ1つだけにする
 export default function ProductDetail() {
   const params = useParams();
   const id = Number(params.id);
   const { addToCart } = useCart();
   const { wishlist, toggleWishlist } = useWishlist();
+  const { showMessage, MESSAGES } = useMessage(); // 共通機能
 
   const product = products.find((p) => p.id === id);
   const [quantity, setQuantity] = useState(1);
-  const [toast, setToast] = useState<string | null>(null);
 
   const isFavorite = wishlist.includes(id);
 
   const toggleFavorite = () => {
     toggleWishlist(id);
-    if (!isFavorite) setToast("禁域の果実を愛好リストへ加えた。");
+    if (!isFavorite) {
+      showMessage(MESSAGES.WISH_ADD); // 共通メッセージ
+    }
   };
   
-// 修正後
-const handleAddToCart = () => {
-  // 第2引数に quantity を追加して呼び出す
-  addToCart(product, quantity); 
-  setToast("カートに禁域の果実を積載した。");
-};
+  const handleAddToCart = () => {
+    addToCart(product, quantity); 
+    showMessage(MESSAGES.CART_ADD); // 共通メッセージ
+  };
+
   if (!product) return <div className="p-20 text-center">商品が見つかりません</div>;
 
   return (
     <div className="min-h-screen bg-black text-white p-6 pt-32 flex flex-col items-center">
-      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+      {/* Toastコンポーネントを削除し、共通のMessageProviderが画面中央で表示を担当します */}
 
       <div className="max-w-2xl w-full">
         <div className="grid md:grid-cols-2 gap-12 items-center">
