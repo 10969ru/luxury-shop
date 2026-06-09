@@ -1,18 +1,22 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
+import Link from 'next/link';
 
 export default function ConsentModal() {
   const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    // すでに同意済みかチェック
-    const hasAgreed = localStorage.getItem("hasAgreedToVoid");
-    if (!hasAgreed) {
-      setIsOpen(true);
-    }
-  }, []);
-
+useEffect(() => {
+  // すでに同意済みかチェック
+  const hasAgreed = localStorage.getItem("hasAgreedToVoid");
+  
+  // URLが /terms の場合はモーダルを表示しないようにする
+  const isTermsPage = window.location.pathname === '/terms';
+  
+  if (!hasAgreed && !isTermsPage) {
+    setIsOpen(true);
+  }
+}, []);
   const handleAgree = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -45,7 +49,7 @@ export default function ConsentModal() {
   
   {/* リンクを追加 */}
   <p className="pt-4 border-t border-zinc-800">
-    詳細は <a href="/terms" className="underline hover:text-white">利用規約</a> をご確認ください。
+    詳細は <Link href="/terms" className="underline hover:text-white">利用規約</Link> をご確認ください。
   </p>
 </div>        <button 
           onClick={handleAgree}

@@ -23,7 +23,7 @@ export default function RequestPage() {
     const { data: profile } = await supabase
       .from('profiles')
       .select('username, display_name')
-      .eq('id', user.id)
+      .eq('use_id', user.id)
       .single();
 
     // insertDataをany型として定義することで赤線を回避

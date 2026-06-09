@@ -51,3 +51,12 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.fog-effect {
+  /* opacityを1から0へ、5秒かけてゆっくり消える */
+  animation: fadeOut 5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
