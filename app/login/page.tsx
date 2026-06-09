@@ -33,7 +33,7 @@ export default function LoginPage() {
     showMessage(MESSAGES.SIGNUP_SUCCESS);
   };
 
-const handleSignIn = async () => {
+  const handleSignIn = async () => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
@@ -53,22 +53,14 @@ const handleSignIn = async () => {
     const lastLoginDate = profile?.last_login ? new Date(profile.last_login).toISOString().split('T')[0] : null;
     const today = new Date().toISOString().split('T')[0];
 
-    // メッセージを表示
     if (lastLoginDate === today) {
       showMessage(MESSAGES.LOGIN_DAILY_BONUS);
     } else {
       showMessage(MESSAGES.LOGIN_SUCCESS);
     }
+    router.push("/"); // ログイン成功後にホームへ遷移
+  };
 
-    // 霧のフラグをクリア
-    sessionStorage.removeItem("hasVisited");
-
-    // 【重要】メッセージカードが表示されている時間を確保してから遷移
-    // 2500ms（2.5秒）待機させてから移動することでメッセージを見せる
-    setTimeout(() => {
-      router.push('/');
-    }, 2500); 
-  };  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
       <button onClick={() => router.push('/')} className="absolute top-4 left-4 text-zinc-500 hover:text-white transition">← Home</button>
