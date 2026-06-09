@@ -2,74 +2,61 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
-import { useMessage } from "../context/MessageContext"; // インポート追加
+import { useMessage } from "../context/MessageContext";
 
 export default function MyPage() {
   const [activeTab, setActiveTab] = useState("menu");
   const [orders, setOrders] = useState<any[]>([]);
   const [displayName, setDisplayName] = useState("名もなき者");
-  const [balance, setBalance] = useState(0);
   const router = useRouter();
-  const { showMessage, MESSAGES } = useMessage(); // 共通メッセージ機能
+  const { showMessage, MESSAGES } = useMessage();
 
-useEffect(() => {
-    const fetchUserData = async () => {
+  useEffect(() => {
+    const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-console.log("現在ログイン中のユーザーID:", user?.id); // これを追加
       if (!user) {
         router.push("/login");
         return;
       }
 
-      // 取得結果を確認
-      const { data: profile, error } = await supabase
+      // 1. プロフィール取得
+      const { data: profile } = await supabase
         .from('profiles')
-        .select('display_name, balance')
+        .select('display_name')
         .eq('id', user.id)
         .single();
       
-      // デバッグ用ログ
-      console.log("DBから取得したプロフィール:", profile);
-      console.log("エラー:", error);
-        
       if (profile) {
-        // null の場合も考慮しつつ、空文字なら初期値へ
-        setDisplayName(profile.display_name && profile.display_name.trim() !== "" ? profile.display_name : "名もなき者");
-        setBalance(profile.balance ?? 0);
-      } else {
-        // profile が取れなかった場合
-        setDisplayName("名もなき者");
+        setDisplayName(profile.display_name?.trim() || "名もなき者");
+      }
+
+      // 2. 購入履歴取得（写真データを含む）
+      const { data: orderData } = await supabase
+        .from('purchase_history')
+        .select('id, item_name, amount, created_at, image_url')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (orderData) {
+        setOrders(orderData);
       }
     };
-    fetchUserData();
+    fetchData();
   }, [router]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    showMessage(MESSAGES.LOGOUT); // ログアウト時メッセージ
-    setTimeout(() => router.push("/"), 1500); // メッセージを読んでから遷移
+    showMessage(MESSAGES.LOGOUT);
+    setTimeout(() => router.push("/"), 1500);
   };
 
   return (
     <div className="min-h-screen bg-black text-white p-6 pt-32 text-center">
-    <h1 className="text-xl tracking-[0.3em] mb-4">
-      WELCOME,<br />
-      {displayName.toUpperCase()}
-    </h1>
+      <h1 className="text-xl tracking-[0.3em] mb-4">WELCOME,<br />{displayName.toUpperCase()}</h1>
 
       <div className="flex justify-center gap-8 mb-12 border-b border-zinc-800 pb-4 max-w-md mx-auto">
-        <button 
-          onClick={() => setActiveTab("menu")}
-          className={`tracking-[0.2em] transition ${activeTab === "menu" ? "text-white border-b border-white" : "text-zinc-600"}`}
-        >
-          MENU
-        </button>
-        <button 
-          onClick={() => setActiveTab("history")}
-          className={`tracking-[0.2em] transition ${activeTab === "history" ? "text-white border-b border-white" : "text-zinc-600"}`}
-        >
-          ORDERS
-        </button>
+        <button onClick={() => setActiveTab("menu")} className={`tracking-[0.2em] transition ${activeTab === "menu" ? "text-white border-b border-white" : "text-zinc-600"}`}>MENU</button>
+        <button onClick={() => setActiveTab("history")} className={`tracking-[0.2em] transition ${activeTab === "history" ? "text-white border-b border-white" : "text-zinc-600"}`}>ORDERS</button>
       </div>
 
       {activeTab === "menu" ? (
@@ -85,7 +72,7 @@ console.log("現在ログイン中のユーザーID:", user?.id); // これを�
             orders.map((order) => (
               <div key={order.id} className="border border-zinc-800 p-4 rounded-sm flex items-center gap-4">
                 {order.image_url && (
-                  <img src={order.image_url} alt={order.item_name} className="w-16 h-16 object-cover" />
+                  <img src={order.image_url} alt={order.item_name} className="w-16 h-16 object-cover bg-zinc-900" />
                 )}
                 <div>
                   <p className="text-sm">{order.item_name}</p>

@@ -16,26 +16,21 @@ export default function WalletPage() {
         return;
       }
 
-      // ここで一度だけ変数を定義し、取得する
       const { data, error } = await supabase
         .from("profiles")
         .select("balance")
         .eq("id", user.id)
         .single();
-
-      if (error) {
-        console.error("データ取得エラー:", error);
-      } else if (data) {
-        console.log("取得できたデータ:", data);
+          
+      if (data) {
         setBalance(data.balance);
       }
-      
       setLoading(false);
     };
-    
     fetchProfile();
   }, []);
 
+  // 次回付与残高の計算 (残高の0.001%)
   const nextBonus = Math.floor(balance * 0.00001);
 
   if (loading) return <div className="text-center pt-24 text-zinc-500">禁域の情報を照会中...</div>;
@@ -56,6 +51,14 @@ export default function WalletPage() {
         </div>
       </div>
       
+      <div className="mt-12 text-center">
+        <button 
+          onClick={() => supabase.auth.signOut().then(() => router.push('/'))}
+          className="text-xs text-zinc-600 hover:text-white transition"
+        >
+          LOGOUT
+        </button>
+      </div>
     </div>
   );
 }

@@ -62,12 +62,14 @@ export default function CheckoutPage() {
       };
     });
 
-    // 4. 履歴保存
-    const { error: historyError } = await supabase.from('purchase_history').insert(historyItems);
-    if (historyError) {
-      showMessage("履歴の保存に失敗した。");
-      return;
-    }
+// 4. 履歴保存のデバッグ用
+console.log("保存しようとしているデータ:", historyItems);
+const { error: historyError } = await supabase.from('purchase_history').insert(historyItems);
+if (historyError) {
+  console.error("履歴エラー詳細:", historyError); // ここに具体的な理由が出る
+  return;
+}
+
 
     // 5. 完了処理：メッセージを出してからリダイレクト
     setCart([]);
