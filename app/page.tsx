@@ -19,15 +19,8 @@ export default function HomePage() {
 
   // 決済完了時のメッセージ表示（コンポーネントがマウントされた時に一度だけ確認）
 // app/page.tsx の useEffect をこれに差し替えてください
-useEffect(() => {
-  if (localStorage.getItem("purchaseComplete") === "true") {
-    localStorage.removeItem("purchaseComplete");
-    setTimeout(() => {
-      showMessage(MESSAGES.PURCHASE_SUCCESS);
-    }, 500);
-  }
-}, []);
-  return (
+
+return (
     <div className="flex flex-col min-h-screen bg-black text-white">
       <main className="flex-grow p-4 pb-24 pt-24 flex flex-col items-center">
         {/* スライドショー */}
