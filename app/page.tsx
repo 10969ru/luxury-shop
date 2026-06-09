@@ -24,7 +24,7 @@ return (
     <div className="flex flex-col min-h-screen bg-black text-white">
       <main className="flex-grow p-4 pb-24 pt-24 flex flex-col items-center">
         {/* スライドショー */}
-        <div className="relative w-150 max-w-md h-80 overflow-hidden rounded-3xl bg-zinc-900 mt-8 flex items-center justify-center">
+        <div className="relative w-150 max-w-md h-60 overflow-hidden rounded-3xl bg-zinc-900 mt-8 flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={index}

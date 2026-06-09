@@ -62,7 +62,19 @@ export default function MyPage() {
       {activeTab === "menu" ? (
         <div className="max-w-xs mx-auto space-y-4">
           <button onClick={() => router.push('/wallet')} className="w-full py-4 border border-zinc-800 hover:border-white transition tracking-[0.2em]">WALLET</button>
+          <button 
+  onClick={() => router.push('/request')} 
+  className="w-full py-4 border border-zinc-800 hover:border-white transition tracking-[0.2em]"
+>
+  REQUEST ITEM
+</button>
           <button onClick={handleSignOut} className="w-full py-4 border border-zinc-800 text-zinc-500 hover:text-red-500 transition tracking-[0.2em]">SIGN OUT</button>
+          <a 
+        href="/terms" 
+        className="text-[10px] text-zinc-400 hover:text-white transition tracking-[0.2em] underline decoration-zinc-800 hover:decoration-white"
+      >
+        TERMS OF SERVICE
+      </a>
         </div>
       ) : (
         <div className="max-w-md mx-auto text-left space-y-4">
