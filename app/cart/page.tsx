@@ -1,10 +1,13 @@
 "use client";
 import { useCart } from "../context/CartContext";
 import { useRouter } from "next/navigation";
+import { supabase } from "../lib/supabaseClient";
+import { useMessage } from "../context/MessageContext";
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity } = useCart();
   const router = useRouter();
+  const { showMessage } = useMessage();
 
   // 合計金額の計算
   const total = cart.reduce((sum: number, item: any) => {
@@ -13,6 +16,19 @@ export default function CartPage() {
       : item.price;
     return sum + (price * (item.quantity || 1));
   }, 0);
+
+  // 取引開始（チェックアウト）前の認証チェック
+  const handleCheckout = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      showMessage("取引を開始するにはログインが必要です。");
+      router.push("/login");
+      return;
+    }
+    
+    router.push("/cart/checkout");
+  };
 
   return (
     <div className="min-h-screen bg-black text-white p-6 pt-32">
@@ -30,36 +46,32 @@ export default function CartPage() {
 
             return (
               <div key={index} className="flex gap-4 border-b border-zinc-900 pb-4">
-                {/* 写真：サイズ固定 */}
                 <div className="w-20 h-20 bg-zinc-900 rounded-sm overflow-hidden flex-shrink-0">
                   <img src={item.detailImg} alt={item.name} className="w-full h-full object-cover" />
                 </div>
                 
-                {/* 右側領域：縦積み */}
                 <div className="flex-1 flex flex-col justify-between min-w-0">
                   <p className="text-sm truncate">{item.name}</p>
                   
-                  {/* 1行目：数量変更と価格 */}
                   <div className="flex justify-between items-center mt-2">
-                    <div className="flex items-center gap-2 border border-zinc-800 w-fit"> {/* gapとborder色を微調整 */}
+                    <div className="flex items-center gap-2 border border-zinc-800 w-fit">
                     <button 
                         onClick={() => updateQuantity(item.id, -1)} 
-                        className="px-2 py-0.5 hover:bg-zinc-800 text-xs" /* px, pyを減らし、text-xsで小さく */
+                        className="px-2 py-0.5 hover:bg-zinc-800 text-xs"
                     >
                         -
                     </button>
-                    <span className="text-xs w-3 text-center">{item.quantity || 1}</span> {/* text-xsで小さく */}
+                    <span className="text-xs w-6 text-center">{item.quantity || 1}</span>
                     <button 
                         onClick={() => updateQuantity(item.id, 1)} 
-                        className="px-2 py-0.5 hover:bg-zinc-800 text-xs" /* px, pyを減らし、text-xsで小さく */
+                        className="px-2 py-0.5 hover:bg-zinc-800 text-xs"
                     >
                         +
-                      </button>
+                    </button>
                       </div>  
                     <span className="text-sm">¥{subtotal.toLocaleString()}</span>
                   </div>
 
-                  {/* 2行目：REMOVEボタン */}
                   <button 
                     onClick={() => removeFromCart(index)}
                     className="text-[10px] text-zinc-500 underline w-fit hover:text-white transition"
@@ -76,7 +88,7 @@ export default function CartPage() {
           </div>
           
           <button 
-            onClick={() => router.push("/cart/checkout")}
+            onClick={handleCheckout}
             className="w-full border border-white py-3 hover:bg-white hover:text-black transition mt-8 tracking-widest"
           >
             取引開始

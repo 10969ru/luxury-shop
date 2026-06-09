@@ -1,10 +1,13 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "../lib/supabaseClient"; // supabaseクライアントをインポート
+import { useMessage } from "./MessageContext"; // メッセージ表示用のフック
 
 const CartContext = createContext<any>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<any[]>([]);
+  const { showMessage } = useMessage(); // メッセージ表示用
 
   useEffect(() => {
     const saved = localStorage.getItem("cart");
@@ -21,8 +24,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  // 1個ずつ追加する関数
-  const addToCart = (product: any, quantity: number) => {
+  // 認証チェックとカート追加を行う関数
+  const addToCart = async (product: any, quantity: number) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // ① ログインガード：ユーザーがいなければメッセージを出して中断
+    if (!user) {
+      showMessage("カートに追加するにはログインが必要です。");
+      return;
+    }
+
     setCart((prevCart) => {
       const existingIndex = prevCart.findIndex((item) => item.id === product.id);
       if (existingIndex > -1) {
@@ -35,30 +46,31 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // まとめて追加する関数
-const addMultipleToCart = (products: any[]) => {
-    setCart((prevCart) => {
-      // 既存のカートをベースにする
-      const updatedCart = [...prevCart];
+  const addMultipleToCart = async (products: any[]) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      showMessage("ログインが必要です。");
+      return;
+    }
 
+    setCart((prevCart) => {
+      const updatedCart = [...prevCart];
       products.forEach((product) => {
         const existingIndex = updatedCart.findIndex((item) => item.id === product.id);
-        
         if (existingIndex > -1) {
-          // すでにある場合は数量を足す
           updatedCart[existingIndex] = {
             ...updatedCart[existingIndex],
             quantity: (updatedCart[existingIndex].quantity || 1) + 1
           };
         } else {
-          // ない場合は新しく追加する
           updatedCart.push({ ...product, quantity: 1 });
         }
       });
-      
-      return updatedCart; // 最後にまとめて更新された配列を返す
+      return updatedCart;
     });
   };
+
   const removeFromCart = (index: number) => {
     setCart((prev) => prev.filter((_, i) => i !== index));
   };
