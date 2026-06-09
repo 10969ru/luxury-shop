@@ -23,7 +23,7 @@ export default function MyPage() {
       const { data: profile } = await supabase
         .from('profiles')
         .select('display_name')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single();
       
       if (profile) {
@@ -63,11 +63,11 @@ export default function MyPage() {
         <div className="max-w-xs mx-auto space-y-4">
           <button onClick={() => router.push('/wallet')} className="w-full py-4 border border-zinc-800 hover:border-white transition tracking-[0.2em]">WALLET</button>
           <button 
-  onClick={() => router.push('/request')} 
-  className="w-full py-4 border border-zinc-800 hover:border-white transition tracking-[0.2em]"
->
-  REQUEST ITEM
-</button>
+          onClick={() => router.push('/request')} 
+          className="w-full py-4 border border-zinc-800 hover:border-white transition tracking-[0.2em]"
+        >
+          REQUEST ITEM
+        </button>
           <button onClick={handleSignOut} className="w-full py-4 border border-zinc-800 text-zinc-500 hover:text-red-500 transition tracking-[0.2em]">SIGN OUT</button>
           <a 
         href="/terms" 
