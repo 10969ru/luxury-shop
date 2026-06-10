@@ -39,7 +39,11 @@ export default function WishlistPage() {
       <h1 className="text-2xl tracking-[0.3em] mb-12 text-center">FAVORITES</h1>
 
       {wishItems.length === 0 ? (
-        <p className="text-center text-zinc-300">禁域にはまだ、何もない。</p>
+    <p className="text-center text-zinc-300">
+      欲望の書には、
+      <br />
+      まだ何も記されていない。
+    </p>
       ) : (
         <div className="max-w-4xl mx-auto space-y-6">
           {wishItems.map((product) => (

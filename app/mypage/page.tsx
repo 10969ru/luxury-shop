@@ -10,10 +10,10 @@ export default function MyPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [displayName, setDisplayName] = useState("名もなき者");
   const router = useRouter();
-  const { showMessage, MESSAGES } = useMessage();
-  const { setIsAgreed, setShowFog } = useConsent(); // 追加
+const { showMessage, MESSAGES } = useMessage();
+const { setIsAgreed, setShowFog, setLogoutFog } = useConsent();
 
-  useEffect(() => {
+useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !user.email) {
@@ -42,17 +42,17 @@ export default function MyPage() {
     fetchData();
   }, [router]);
 
-  const handleSignOut = async () => {
-    // 【重要】ログアウト時に状態をリセットして霧フラグを完全にOFFにする
-    setIsAgreed(false);
-    setShowFog(false);
-    localStorage.removeItem('hasAgreed');
-    sessionStorage.removeItem('hasVisited'); // 訪問歴もリセットする場合
+const handleSignOut = async () => {
+  setIsAgreed(false);
+  setShowFog(false);
 
-    await supabase.auth.signOut();
-    showMessage(MESSAGES.LOGOUT);
-    setTimeout(() => router.push("/"), 1500);
-  };
+  localStorage.removeItem("hasAgreed");
+  sessionStorage.removeItem("hasVisited");
+
+  await supabase.auth.signOut();
+
+  setLogoutFog(true);
+};
 
   return (
     <div className="min-h-screen bg-black text-white p-6 pt-32 text-center">
