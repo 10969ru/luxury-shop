@@ -11,30 +11,34 @@ export default function MyPage() {
   const router = useRouter();
   const { showMessage, MESSAGES } = useMessage();
 
-  useEffect(() => {
+useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      if (!user || !user.email) {
         router.push("/login");
         return;
       }
 
-      // 1. プロフィール取得
-      const { data: profile } = await supabase
+      console.log("ログイン中のメールアドレス:", user.email);
+
+      // ★修正：user_id ではなく email (usernameカラム) で検索する
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('display_name')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (profile) {
-        setDisplayName(profile.display_name?.trim() || "名もなき者");
+        .eq('username', user.email) 
+        .maybeSingle();
+
+      console.log("検索結果:", profile);
+
+      if (profile && profile.display_name) {
+        setDisplayName(profile.display_name);
       }
 
-      // 2. 購入履歴取得（写真データを含む）
+      // 購入履歴も同様に email で検索するように設計を見直す必要があります
       const { data: orderData } = await supabase
         .from('purchase_history')
         .select('id, item_name, amount, created_at, image_url')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id) // user_id カラムがない場合はここを email に
         .order('created_at', { ascending: false });
 
       if (orderData) {
@@ -62,19 +66,9 @@ export default function MyPage() {
       {activeTab === "menu" ? (
         <div className="max-w-xs mx-auto space-y-4">
           <button onClick={() => router.push('/wallet')} className="w-full py-4 border border-zinc-800 hover:border-white transition tracking-[0.2em]">WALLET</button>
-          <button 
-          onClick={() => router.push('/request')} 
-          className="w-full py-4 border border-zinc-800 hover:border-white transition tracking-[0.2em]"
-        >
-          REQUEST ITEM
-        </button>
+          <button onClick={() => router.push('/request')} className="w-full py-4 border border-zinc-800 hover:border-white transition tracking-[0.2em]">REQUEST ITEM</button>
           <button onClick={handleSignOut} className="w-full py-4 border border-zinc-800 text-zinc-500 hover:text-red-500 transition tracking-[0.2em]">SIGN OUT</button>
-          <a 
-        href="/terms" 
-        className="text-[10px] text-zinc-400 hover:text-white transition tracking-[0.2em] underline decoration-zinc-800 hover:decoration-white"
-      >
-        TERMS OF SERVICE
-      </a>
+          <a href="/terms" className="text-[10px] text-zinc-400 hover:text-white transition tracking-[0.2em] underline decoration-zinc-800 hover:decoration-white">TERMS OF SERVICE</a>
         </div>
       ) : (
         <div className="max-w-md mx-auto text-left space-y-4">
@@ -83,9 +77,7 @@ export default function MyPage() {
           ) : (
             orders.map((order) => (
               <div key={order.id} className="border border-zinc-800 p-4 rounded-sm flex items-center gap-4">
-                {order.image_url && (
-                  <img src={order.image_url} alt={order.item_name} className="w-16 h-16 object-cover bg-zinc-900" />
-                )}
+                {order.image_url && <img src={order.image_url} alt={order.item_name} className="w-16 h-16 object-cover bg-zinc-900" />}
                 <div>
                   <p className="text-sm">{order.item_name}</p>
                   <p className="text-lg">¥{order.amount?.toLocaleString()}</p>

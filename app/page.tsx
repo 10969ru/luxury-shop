@@ -3,11 +3,21 @@ import { useEffect, useState } from "react";
 import { products } from "./data/products";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useMessage } from "./context/MessageContext"; // インポートを追加
+import { useMessage } from "./context/MessageContext";
+import { useConsent } from "./context/ConsentContext";
 
 export default function HomePage() {
   const [index, setIndex] = useState(0);
-  const { showMessage, MESSAGES } = useMessage(); // 共通機能を使用
+  const { showMessage, MESSAGES } = useMessage();
+  const { isAgreed, setIsAgreed } = useConsent();
+
+  // ページ読み込み時に localStorage から同意状態を復元
+  useEffect(() => {
+    const agreed = localStorage.getItem('hasAgreed');
+    if (agreed === 'true') {
+      setIsAgreed(true);
+    }
+  }, [setIsAgreed]);
 
   // スライドショーのタイマー
   useEffect(() => {
@@ -17,11 +27,16 @@ export default function HomePage() {
     return () => clearInterval(timer);
   }, []);
 
-  // 決済完了時のメッセージ表示（コンポーネントがマウントされた時に一度だけ確認）
-// app/page.tsx の useEffect をこれに差し替えてください
+  return (
+    <div className="flex flex-col min-h-screen bg-black text-white relative">
+      
+      {/* 同意済みの場合にのみ霧（FogEffect）を表示 */}
+      {isAgreed && (
+        <div className="fixed inset-0 pointer-events-none z-50">
+          {/* ここに <FogEffect /> を配置 */}
+        </div>
+      )}
 
-return (
-    <div className="flex flex-col min-h-screen bg-black text-white">
       <main className="flex-grow p-4 pb-24 pt-24 flex flex-col items-center">
         {/* スライドショー */}
         <div className="relative w-150 max-w-md h-60 overflow-hidden rounded-3xl bg-zinc-900 mt-8 flex items-center justify-center">
