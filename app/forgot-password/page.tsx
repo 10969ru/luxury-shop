@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
     setLoading(false);
 
     if (error) {
-      alert("送信失敗: " + error.message);
+      alert("依頼失敗: " + error.message);
       return;
     }
 

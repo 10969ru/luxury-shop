@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   const handleUpdate = async () => {
     const { error } = await supabase.auth.updateUser({
@@ -16,6 +18,9 @@ export default function ResetPasswordPage() {
     }
 
     alert("契約鍵の再刻印を完了した。");
+
+    // 👉 ここ追加
+    router.push("/login");
   };
 
   return (
@@ -24,7 +29,7 @@ export default function ResetPasswordPage() {
 
       <input
         type="password"
-        placeholder="新しいパスワード"
+        placeholder="新たなる鍵"
         className="p-2 mb-4 bg-zinc-900 border border-zinc-700 w-64"
         onChange={(e) => setPassword(e.target.value)}
       />
