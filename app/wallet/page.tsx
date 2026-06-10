@@ -9,26 +9,33 @@ export default function WalletPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // ページにアクセスするたびに最新の残高をデータベースから取得する
     const fetchProfile = async () => {
+      setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
         router.push("/login");
         return;
       }
 
-      const { data } = await supabase
+      // データベースから最新のbalanceを取得
+      const { data, error } = await supabase
         .from("profiles")
         .select("balance")
         .eq("id", user.id)
-        .single();
+        .maybeSingle(); // 確実にレコードを取得
           
-      if (data) {
+      if (error) {
+        console.error("残高取得エラー:", error);
+      } else if (data) {
         setBalance(data.balance);
       }
       setLoading(false);
     };
+
     fetchProfile();
-  }, []);
+  }, [router]); // routerが変化した時（ページ遷移時）に再実行
 
   const nextBonus = Math.floor(balance * 0.00001);
 
@@ -46,7 +53,7 @@ export default function WalletPage() {
           <p 
             className="font-light tracking-wider"
             style={{ 
-              fontSize: 'clamp(1rem, 5vw, 2.2rem)', // 数字のサイズのみ可変
+              fontSize: 'clamp(1rem, 5vw, 2.2rem)',
               whiteSpace: 'nowrap'
             }}
           >
@@ -60,7 +67,7 @@ export default function WalletPage() {
           <p 
             className="font-light text-zinc-300"
             style={{ 
-              fontSize: 'clamp(0.8rem, 4vw, 1.5rem)', // 数字のサイズのみ可変
+              fontSize: 'clamp(0.8rem, 4vw, 1.5rem)',
               whiteSpace: 'nowrap'
             }}
           >

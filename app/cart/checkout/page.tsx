@@ -15,17 +15,17 @@ export default function CheckoutPage() {
     return sum + (price * (item.quantity || 1));
   }, 0);
 
-  const handlePurchase = async () => {
+const handlePurchase = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       showMessage("ログインが必要だ。");
       return;
     }
 
-    // 1. 残高取得
+    // 1. 残高とプロファイル情報を取得
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('balance')
+      .select('balance, username, display_name') // カラムを取得
       .eq('id', user.id)
       .single();
 
@@ -51,41 +51,41 @@ export default function CheckoutPage() {
       return;
     }
 
-    // 3. 履歴データ作成
+    // 3. 履歴データ作成（ここでusernameとdisplay_nameを追加）
     const historyItems = cart.map((item: any) => {
       const productData = products.find((p) => p.name === item.name);
       return {
         user_id: user.id,
         item_name: item.name,
         amount: (typeof item.price === 'string' ? parseInt(item.price.replace(/[^0-9]/g, '')) : item.price) * (item.quantity || 1),
-        image_url: item.detailImg || productData?.detailImg || ""
+        image_url: item.detailImg || productData?.detailImg || "",
+        // ★ここに追加
+        username: profile.username,
+        display_name: profile.display_name
       };
     });
 
-// 4. 履歴保存のデバッグ用
-console.log("保存しようとしているデータ:", historyItems);
-const { error: historyError } = await supabase.from('purchase_history').insert(historyItems);
-if (historyError) {
-  console.error("履歴エラー詳細:", historyError); // ここに具体的な理由が出る
-  return;
-}
+    // 4. 履歴保存
+    const { error: historyError } = await supabase.from('purchase_history').insert(historyItems);
+    if (historyError) {
+      console.error("履歴エラー詳細:", historyError);
+      showMessage("履歴の保存に失敗しました。");
+      return;
+    }
 
-
-    // 5. 完了処理：メッセージを出してからリダイレクト
+    // 5. 完了処理
     setCart([]);
     localStorage.removeItem("cart");
-    
-    // 購入完了フラグを立てる（HomePageで表示するためのもの）
     localStorage.setItem("purchaseComplete", "true");
     
     showMessage(MESSAGES.PURCHASE_SUCCESS);
     
-    // メッセージが読めるよう、少し待ってから移動
     setTimeout(() => {
       window.location.href = "/wallet";
     }, 2000);
   };
 
+  
   return (
     <div className="min-h-screen bg-black text-white p-6 pt-32 text-center">
       <h1 className="text-xl tracking-[0.3em] mb-12">取引を確認する</h1>
