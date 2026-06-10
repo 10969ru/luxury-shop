@@ -30,37 +30,48 @@ export default function LegalPage() {
       </section>
 
       <section className="space-y-4 mb-8">
-        <h2 className="text-white border-b border-zinc-800 pb-2">第4条（アカウントの停止）</h2>
+        <h2 className="text-white border-b border-zinc-800 pb-2">第4条（未成年者の利用について）</h2>
+        <p>未成年者は保護者の同意を得た上で利用するものとし、利用を開始した時点で同意を得ているものとみなします。</p>
+      </section>
+
+      <section className="space-y-4 mb-8">
+        <h2 className="text-white border-b border-zinc-800 pb-2">第5条（規約の同意と変更）</h2>
+        <p>本サイトを利用することで、利用者は本規約に同意したものとみなします。運営者は、必要に応じて予告なく本規約を変更できるものとし、変更後の規約は本サイトに掲示した時点で効力を発揮します。</p>
+      </section>
+      
+
+      <section className="space-y-4 mb-8">
+        <h2 className="text-white border-b border-zinc-800 pb-2">第6条（アカウントの停止）</h2>
         <p>運営者は、利用者が本規約に違反したと判断した場合、事前通知なくアカウントの凍結、削除、またはサービスの利用停止措置をとることができるものとします。この際、アカウント内のデータや仮想通貨が消失しても、運営者は一切の責任を負いません。</p>
       </section>
 
       <section className="space-y-4 mb-8">
-        <h2 className="text-white border-b border-zinc-800 pb-2">第5条（サービスの変更・中断）</h2>
+        <h2 className="text-white border-b border-zinc-800 pb-2">第7条（サービスの変更・中断）</h2>
         <p>運営者は、事前の予告なく本サイトの全部または一部の内容を変更、中断または終了できるものとします。これに起因して利用者に生じた損害について、運営者は一切の責任を負いません。</p>
       </section>
 
       <section className="space-y-4 mb-8">
-        <h2 className="text-white border-b border-zinc-800 pb-2">第6条（免責事項・無保証）</h2>
+        <h2 className="text-white border-b border-zinc-800 pb-2">第8条（免責事項・無保証）</h2>
         <p>本サイトは「現状有姿」で提供されます。運営者は、本サイトの稼働に中断がないこと、エラーが発生しないこと、または第三者の権利を侵害しないことについて一切保証しません。また、いかなる場合においても、運営者の過失による損害賠償は、利用者が支払った金額を上限とします（無料利用の場合は一切の責任を負いません）。</p>
       </section>
 
       <section className="space-y-4 mb-8">
-        <h2 className="text-white border-b border-zinc-800 pb-2">第7条（仮想通貨・アイテム）</h2>
+        <h2 className="text-white border-b border-zinc-800 pb-2">第9条（仮想通貨・アイテム）</h2>
         <p>本サイト内で提供される仮想通貨・アイテム等はすべて架空のものであり、現実の通貨的価値を有しません。また、いかなる場合においても返金・換金はできません。</p>
       </section>
 
       <section className="space-y-4 mb-8">
-        <h2 className="text-white border-b border-zinc-800 pb-2">第8条（知的財産権）</h2>
+        <h2 className="text-white border-b border-zinc-800 pb-2">第10条（知的財産権）</h2>
         <p>本サイトのコンテンツ（テキスト、画像、プログラム等）の著作権は運営者に帰属します。無断転載・複製を禁じます。</p>
       </section>
 
       <section className="space-y-4 mb-8">
-        <h2 className="text-white border-b border-zinc-800 pb-2">第9条（外部サービス）</h2>
+        <h2 className="text-white border-b border-zinc-800 pb-2">第11条（外部サービス）</h2>
         <p>本サイトはSupabase等の外部サービスを利用しています。これらのサービスの仕様変更や障害により生じた損害について、運営者は一切の責任を負いません。</p>
       </section>
 
       <section className="space-y-4 mb-8">
-        <h2 className="text-white border-b border-zinc-800 pb-2">第10条（準拠法と管轄裁判所）</h2>
+        <h2 className="text-white border-b border-zinc-800 pb-2">第12条（準拠法と管轄裁判所）</h2>
         <p>本規約の準拠法は日本法とし、紛争が生じた場合は、東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p>
       </section>
 

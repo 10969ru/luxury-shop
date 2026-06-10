@@ -62,26 +62,25 @@ export default function ConsentModal() {
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 p-6">
-<div className="text-left text-xs text-zinc-300 space-y-4 leading-relaxed">
-  <p>利用を開始する前に、以下の重要事項にご同意ください。</p>
-  
-  <ul className="list-decimal list-inside space-y-2">
-    <li>本サイト内のすべての提供物（商品・仮想通貨等）は完全に架空のものであり、実体および金銭的価値を一切伴いません。</li>
-    <li>利用者は「禁忌の館」の訪問者として、体験内容を現実世界に持ち込まない（秘匿する）ことに同意するものとします。</li>
-    <li>本サービスの利用により生じた直接的・間接的損害について、運営者は一切の責任を負いません。</li>
-    <li>本サービスは予告なく変更・停止される場合があり、それにより生じる影響についても利用者は了承するものとします。</li>
-    <li>未成年者は保護者の同意を得た上で利用するものとし、利用を開始した時点で同意を得ているものとみなします。</li>
-  </ul>
-
-  <p className="pt-4 border-t border-zinc-800">
-    上記および <Link href="/terms" className="underline hover:text-white font-bold">利用規約・プライバシーポリシー</Link> に同意して館へ入る。
-  </p>
-</div>        <button 
+      <div className="max-w-md w-full border border-zinc-700 bg-black p-8 text-center space-y-6">
+        <h2 className="text-xl tracking-[0.3em] text-white">禁忌の館へのアクセス</h2>
+        <div className="text-left text-xs text-zinc-300 space-y-4 leading-relaxed">
+          <p>1. 本サイト内のすべての提供物（商品・仮想通貨等）は完全に架空のものであり、実体および金銭的価値を一切伴いません。</p>
+          <p>3. あなたは現在「禁忌の館」に足を踏み入れようとしています。ここで得た情報、体験を外部に口外することは固く禁じられています</p>
+          <p>4. 本サービスの利用により生じた直接的・間接的損害について、運営者は一切の責任を負いません。</p>
+          <p>5. 本サービスは予告なく変更・停止される場合があり、それにより生じる影響についても利用者は了承するものとします。</p>
+          <p>6. 利用者が未成年者である場合は、保護者の同意を得て本サイトを利用するものとします。</p>
+          <p className="pt-4 border-t border-zinc-800">
+            詳細は <Link href="/terms" className="underline hover:text-white">利用規約</Link> をご確認ください。
+          </p>
+        </div>
+        <button 
           onClick={handleAgree}
           className="w-full py-3 border border-white bg-black text-white hover:bg-white hover:text-black transition tracking-[0.2em]"
         >
           同意して入館する
         </button>
       </div>
+    </div>
   );
 }
