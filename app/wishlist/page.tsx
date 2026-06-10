@@ -19,6 +19,16 @@ export default function WishlistPage() {
     showMessage(MESSAGES.CART_ADD);
   };
 
+  // ★この関数を呼び出せるようにする
+  const handleMoveAllToCart = () => {
+    if (wishItems.length === 0) return;
+
+    addMultipleToCart(wishItems);
+    const idsToRemove = wishItems.map(p => p.id);
+    removeFromWishlist(idsToRemove);
+    showMessage(MESSAGES.CART_ADD_MULTIPLE);
+  };
+
   const handleRemove = (id: number) => {
     toggleWishlist(id);
     showMessage(MESSAGES.REMOVE);
@@ -47,7 +57,6 @@ export default function WishlistPage() {
                 </h3>
                 <p className="text-xs text-zinc-500 mb-2">{product.price}</p>
                 
-                {/* ★ここを調整：REMOVEボタンとカートボタンを同じ行に配置 */}
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => handleRemove(product.id)}
@@ -70,43 +79,43 @@ export default function WishlistPage() {
             </div>
           ))}
 
+          {/* ★修正：ここで関数を呼び出す */}
           <button
-            onClick={() => { /* 一括追加のロジック */ }}
+            onClick={handleMoveAllToCart}
             className="w-full border border-zinc-500 py-4 mt-8 hover:bg-white hover:text-black transition tracking-[0.2em] text-sm"
           >
             全てをカートに積載する
           </button>
-          {/* 商品詳細モーダル */}
-      {selectedProduct && (
-        <div 
-          className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50" 
-          onClick={() => setSelectedProduct(null)}
-        >
-          <div 
-            className="bg-black p-8 max-w-sm w-full border border-zinc-700 relative" 
-            onClick={(e) => e.stopPropagation()} // モーダル内クリックで閉じないようにする
-          >
-            {/* 右上の×ボタン */}
-            <button 
-              onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
 
-            {/* 商品詳細内容 */}
-            <h2 className="text-xl tracking-[0.2em] mb-6 border-b border-zinc-800 pb-4">
-              {selectedProduct.name}
-            </h2>
-            <p className="text-sm text-zinc-300 leading-relaxed">
-              {selectedProduct.desc}
-            </p>
-          </div>
+          {/* モーダル部分（変更なし） */}
+          {selectedProduct && (
+            <div 
+              className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50" 
+              onClick={() => setSelectedProduct(null)}
+            >
+              <div 
+                className="bg-black p-8 max-w-sm w-full border border-zinc-700 relative" 
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button 
+                  onClick={() => setSelectedProduct(null)}
+                  className="absolute top-4 right-4 text-zinc-500 hover:text-white transition"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+
+                <h2 className="text-xl tracking-[0.2em] mb-6 border-b border-zinc-800 pb-4">
+                  {selectedProduct.name}
+                </h2>
+                <p className="text-sm text-zinc-300 leading-relaxed">
+                  {selectedProduct.desc}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
       )}
     </div>
   );
