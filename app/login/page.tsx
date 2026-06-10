@@ -13,7 +13,6 @@ export default function LoginPage() {
   const { setIsAgreed, setShowFog } = useConsent();
   const router = useRouter();
 
-  // 🔥 パスワードリセット追加
   const handleForgotPassword = async () => {
     if (!email) {
       showMessage("先にメールアドレスを入力してね");
