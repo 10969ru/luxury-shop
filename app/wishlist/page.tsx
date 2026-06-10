@@ -84,7 +84,7 @@ export default function WishlistPage() {
             onClick={handleMoveAllToCart}
             className="w-full border border-zinc-500 py-4 mt-8 hover:bg-white hover:text-black transition tracking-[0.2em] text-sm"
           >
-            全てをカートに積載する
+            全ての禁忌具を祭壇へ移す
           </button>
 
           {/* モーダル部分（変更なし） */}

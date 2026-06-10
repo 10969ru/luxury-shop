@@ -1,42 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // useEffectを追加
 import { useParams } from "next/navigation";
 import { products } from "../../data/products";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
-import { useMessage } from "../../context/MessageContext"; // インポート
+import { useMessage } from "../../context/MessageContext";
+import { supabase } from "../../lib/supabaseClient"; // インポートを追加
 
 export default function ProductDetail() {
   const params = useParams();
   const id = Number(params.id);
   const { addToCart } = useCart();
   const { wishlist, toggleWishlist } = useWishlist();
-  const { showMessage, MESSAGES } = useMessage(); // 共通機能
-
-  const product = products.find((p) => p.id === id);
+  const { showMessage, MESSAGES } = useMessage();
+  
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
-  const isFavorite = wishlist.includes(id);
+  // ログイン状態を確認
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsLoggedIn(!!user);
+    };
+    checkUser();
+  }, []);
+
+  // ログイン時のみ、かつリストに含まれている場合のみお気に入りとする
+  const isFavorite = isLoggedIn && wishlist.includes(id);
+
+  const product = products.find((p) => p.id === id);
 
   const toggleFavorite = () => {
     toggleWishlist(id);
-    if (!isFavorite) {
-      showMessage(MESSAGES.WISH_ADD); // 共通メッセージ
+    // toggleWishlist内で未ログイン時はメッセージが出るようになっているため、
+    // ここではログイン中のみ成功メッセージを出す
+    if (!isFavorite && isLoggedIn) {
+      showMessage(MESSAGES.WISH_ADD);
     }
   };
   
   const handleAddToCart = () => {
     addToCart(product, quantity); 
-    showMessage(MESSAGES.CART_ADD); // 共通メッセージ
+    // カート側でログインチェックをしている前提ですが、
+    // 未ログイン時はメッセージがそこで出ます
   };
 
   if (!product) return <div className="p-20 text-center">商品が見つかりません</div>;
 
   return (
     <div className="min-h-screen bg-black text-white p-6 pt-32 flex flex-col items-center">
-      {/* Toastコンポーネントを削除し、共通のMessageProviderが画面中央で表示を担当します */}
-
       <div className="max-w-2xl w-full">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="aspect-[4/5] bg-zinc-900 rounded-2xl overflow-hidden max-w-sm mx-auto">

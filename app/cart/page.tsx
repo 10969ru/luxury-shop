@@ -22,7 +22,7 @@ export default function CartPage() {
   const handleCheckout = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      showMessage("取引を開始するにはログインが必要です。");
+      showMessage("取引を開始するには契約が必要だ。\n");
       router.push("/login");
       return;
     }
@@ -34,7 +34,7 @@ export default function CartPage() {
       <h1 className="text-2xl tracking-[0.3em] mb-12 text-center">CART</h1>
 
       {cart.length === 0 ? (
-        <p className="text-center text-zinc-300">禁域の果実はまだ選ばれていない。</p>
+        <p className="text-center text-zinc-300">禁忌具はまだ選ばれていない。</p>
       ) : (
         <div className="max-w-md mx-auto space-y-8">
           {cart.map((item: any, index: number) => {

@@ -54,7 +54,7 @@ export default function HomePage() {
           </AnimatePresence>
         </div>
 
-        <h2 className="mt-16 mb-8 text-lg tracking-[0.5em] text-zinc-400">－ 禁断の供物 ー</h2>
+        <h2 className="mt-16 mb-8 text-lg tracking-[0.5em] text-zinc-400">－ 禁断の供物 －</h2>
 
         {/* 商品一覧 */}
         <div className="w-full max-w-4xl mt-16 grid grid-cols-1 md:grid-cols-2 gap-8 px-4">

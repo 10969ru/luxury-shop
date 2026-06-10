@@ -30,7 +30,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     
     // ① ログインガード：ユーザーがいなければメッセージを出して中断
     if (!user) {
-      showMessage("カートに追加するにはログインが必要です。");
+      showMessage("祭壇へ移すには\n契約(SIGN IN)が必要だ。\n");
       return;
     }
 

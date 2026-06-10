@@ -1,12 +1,14 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "../lib/supabaseClient"; // 追加
+import { useMessage } from "./MessageContext";    // 追加
 
 const WishlistContext = createContext<any>(null);
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const [wishlist, setWishlist] = useState<number[]>([]);
+  const { showMessage, MESSAGES } = useMessage(); // 追加
 
-  // マウント時にストレージから読み込み
   useEffect(() => {
     const saved = localStorage.getItem("wishlist");
     if (saved) {
@@ -18,28 +20,38 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // 状態変更時にストレージへ保存
   useEffect(() => {
     localStorage.setItem("wishlist", JSON.stringify(wishlist));
   }, [wishlist]);
 
-  // 個別切り替え用
-  const toggleWishlist = (id: number) => {
-    setWishlist((prev) => 
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+  // ★修正：トグル関数を async にし、ログインチェックを追加
+  const toggleWishlist = async (id: number) => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // 未ログイン時のガード処理
+    if (!user) {
+      showMessage("欲望の書に記すには、\n契約(SIGN IN)が必要だ。\n直ちに契約せよ。");
+      return;
+    }
+
+    setWishlist((prev) => {
+      const isExists = prev.includes(id);
+      if (!isExists) {
+        showMessage(MESSAGES.WISH_ADD); // 追加成功時にメッセージ
+      }
+      return isExists ? prev.filter((i) => i !== id) : [...prev, id];
+    });
   };
 
-  // ★追加：一括削除用の関数
   const removeFromWishlist = (ids: number[]) => {
     setWishlist((prev) => prev.filter((id) => !ids.includes(id)));
   };
 
-// app/context/WishlistContext.tsx 内の戻り値
-return (
-  <WishlistContext.Provider value={{ wishlist, toggleWishlist, removeFromWishlist }}>
-    {children}
-  </WishlistContext.Provider>
-);}
+  return (
+    <WishlistContext.Provider value={{ wishlist, toggleWishlist, removeFromWishlist }}>
+      {children}
+    </WishlistContext.Provider>
+  );
+}
 
 export const useWishlist = () => useContext(WishlistContext);

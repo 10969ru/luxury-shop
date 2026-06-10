@@ -2,22 +2,23 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 export const MESSAGES = {
-  SIGNUP_SUCCESS: "契約は完了した。\n禁断の書簡（E-mail）を確認し、\n秘匿された扉を開放せよ。",
-  SIGNUP_EXISTS: "この書簡（E-mail）は既に契約済みである。\n別の鍵を用意せよ。",
+  SIGNUP_SUCCESS: "契約は完了した。\n秘匿された扉を開放せよ。",
+  SIGNUP_EXISTS: "この魂（E-mail）は既に契約済みである。\n別の鍵を用意せよ。",
   AUTH_ERROR: "過ちが発生した：",
   LOGIN_SUCCESS: "禁域へようこそ。",
-  LOGIN_DAILY_BONUS: "禁域へようこそ。\n新たな資産が加算された。\nマイページを開き、残高を確認せよ。",
+  LOGIN_DAILY_BONUS: "禁域へようこそ。\n新たな資産が加算された。\nMY PAGRを開き、残高を確認せよ。",
   LOGIN_INVALID: "虚偽の鍵が提示された。\n正しき資格を示せ。",
-  LOGOUT: "扉は閉ざされた。",
-  WISH_ADD: "禁域の記録に刻まれた。",
-  CART_ADD: "果実がカートへ格納された。",
-  CART_ADD_MULTIPLE: "すべての果実が\nカートへ積載された。",
-  PURCHASE_SUCCESS: "取引は完了した。\n果実は速やかに届けられるだろう。",
+  LOGOUT: "扉は閉ざされた。\nまたの入館を待つ。",
+  WISH_ADD: "欲望の書に記した。",
+  CART_ADD: "禁忌具を取引祭壇へ移した。",
+  CART_ADD_MULTIPLE: "すべての禁忌具が\n祭壇へ移された。",
+  PURCHASE_SUCCESS: "取引は完了した。\n禁忌具は速やかに届けられるだろう。",
   PURCHASE_FAILED_FUNDS: "残高が足りない。\n禁域での取引は不可能だ。",
   QUANTITY_LIMIT: "これ以上の干渉は許されない。",
   NETWORK_ERROR: "禁域との接続が断たれた。",
   PASSWORD_RESET_SENT: "鍵を生成するための書簡を送った。",
-  REMOVE: "禁域の記録から抹消した。",
+  REMOVE: "祭壇から抹消した。",
+  MESSAGE_SENT:"願いは深淵に届いた。\n汝が捧げし祈りに、\n心より感謝する。"
 };
 
 // 型定義を拡張
