@@ -78,12 +78,6 @@ export default function WalletPage() {
       </div>
       
       <div className="mt-12 text-center">
-        <button 
-          onClick={() => supabase.auth.signOut().then(() => router.push('/'))}
-          className="text-xs text-zinc-600 hover:text-white transition"
-        >
-          LOGOUT
-        </button>
       </div>
     </div>
   );

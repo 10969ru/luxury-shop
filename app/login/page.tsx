@@ -9,8 +9,8 @@ export default function LoginPage() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { showMessage, MESSAGES } = useMessage();
-  const { setIsAgreed } = useConsent();
+  const { showMessage, MESSAGES, setIsPaused } = useMessage();
+  const { setIsAgreed, setShowFog } = useConsent();
   const router = useRouter();
 
   const handleSignUp = async () => {
@@ -23,47 +23,49 @@ export default function LoginPage() {
     showMessage(MESSAGES.SIGNUP_SUCCESS);
   };
 
-const handleSignIn = async () => {
-  const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({ email, password });
-  if (authError || !user) { 
-    showMessage(MESSAGES.LOGIN_INVALID); 
-    return; 
-  }
+  const handleSignIn = async () => {
+    const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    if (authError || !user) { 
+      showMessage(MESSAGES.LOGIN_INVALID); 
+      return; 
+    }
 
-  // 1. プロフィール取得
-  let { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('has_consented')
-    .eq('user_id', user.id)
-    .single();
-
-  // 2. 自己修復
-  if (profileError || !profile) {
-    const { data: newProfile, error: insertError } = await supabase
+    // 1. プロファイル取得
+    let { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .insert([{ user_id: user.id, username: email, has_consented: false, balance: 101000000000, display_name: displayName }])
-      .select()
+      .select('has_consented')
+      .eq('user_id', user.id)
       .single();
-    if (!insertError) profile = newProfile;
-  }
 
-  // 3. 同意状態による分岐
-  if (profile?.has_consented === false) {
-    // 【修正】同意が必要な場合はここでメッセージを出さない（モーダルが出るため）
-    setIsAgreed(false); 
-  } else {
-    // 霧のフラグをセット
-    localStorage.setItem('hasAgreed', 'true');
-    setIsAgreed(true);
-    
-    // 【修正】ボーナス処理とメッセージは遷移直前に行う
-    await supabase.rpc('process_login_bonus');
-    showMessage(MESSAGES.LOGIN_SUCCESS);
-    
-    router.push("/");
-  }
-};
+    // 2. 自己修復（プロファイルがない場合）
+    if (profileError || !profile) {
+      const { data: newProfile, error: insertError } = await supabase
+        .from('profiles')
+        .insert([{ user_id: user.id, username: email, has_consented: false, balance: 101000000000, display_name: displayName }])
+        .select()
+        .single();
+      if (!insertError) profile = newProfile;
+    }
 
+    // 3. 分岐処理
+    if (profile?.has_consented === false) {
+      // 初回：メッセージを抑制してトップへ飛ばす（モーダルを待つ）
+      setIsPaused(true); 
+      setIsAgreed(false);
+      router.push("/");
+// 2回目以降の処理部分を修正
+} else {
+  localStorage.setItem('hasAgreed', 'true');
+  setIsAgreed(true);
+  
+  // 霧だけここで表示指示を出す
+  setShowFog(true); 
+  supabase.rpc('process_login_bonus');
+  
+  // メッセージ表示はトップページに任せる（ここでshowMessageを呼ばない）
+  router.push("/");
+} 
+ };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">

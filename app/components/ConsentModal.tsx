@@ -11,7 +11,8 @@ export default function ConsentModal() {
   const pathname = usePathname();
   const router = useRouter();
   const { setIsAgreed } = useConsent();
-  const { showMessage, MESSAGES } = useMessage();
+  // MessageContextから必要な関数・変数を取得
+  const { showMessage, MESSAGES, setIsPaused } = useMessage();
 
   useEffect(() => {
     const checkConsent = async () => {
@@ -36,26 +37,26 @@ export default function ConsentModal() {
     checkConsent();
   }, [pathname]);
 
-// handleAgree 関数のみ修正
-const handleAgree = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  const handleAgree = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-  // DB更新
-  await supabase.from('profiles').update({ has_consented: true }).eq('id', user.id);
-  await supabase.rpc('process_login_bonus');
+    // DB更新
+    await supabase.from('profiles').update({ has_consented: true }).eq('id', user.id);
+    await supabase.rpc('process_login_bonus');
 
-  setIsOpen(false);
-  
-  // メッセージ表示 → 霧発動 → 遷移
-  showMessage(MESSAGES.LOGIN_SUCCESS);
-  setIsAgreed(true); 
+    setIsOpen(false);
+    setIsAgreed(true);
+    
+    // 初回同意後にメッセージ表示を許可し、表示する
+    setIsPaused(false);
+    showMessage(MESSAGES.LOGIN_DAILY_BONUS, 2500);
 
-  setTimeout(() => {
-    router.push("/");
-  }, 2000); 
-};
-
+    // メッセージ表示後に遷移
+    setTimeout(() => {
+      router.push("/");
+    }, 2500);
+  };
 
   if (!isOpen) return null;
 

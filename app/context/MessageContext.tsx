@@ -1,7 +1,6 @@
 "use client";
 import { createContext, useContext, useState, ReactNode } from "react";
 
-// メッセージ辞書（一元管理用）
 export const MESSAGES = {
   SIGNUP_SUCCESS: "契約は完了した。\n禁断の書簡（E-mail）を確認し、\n秘匿された扉を開放せよ。",
   SIGNUP_EXISTS: "この書簡（E-mail）は既に契約済みである。\n別の鍵を用意せよ。",
@@ -18,26 +17,39 @@ export const MESSAGES = {
   QUANTITY_LIMIT: "これ以上の干渉は許されない。",
   NETWORK_ERROR: "禁域との接続が断たれた。",
   PASSWORD_RESET_SENT: "鍵を生成するための書簡を送った。",
-  REMOVE:"禁域の記録から抹消した。",
+  REMOVE: "禁域の記録から抹消した。",
 };
 
-const MessageContext = createContext<any>(null);
+// 型定義を拡張
+interface MessageContextType {
+  message: string | null;
+  showMessage: (msg: string, delay?: number) => void;
+  hideMessage: () => void;
+  setIsPaused: (paused: boolean) => void;
+  MESSAGES: typeof MESSAGES;
+}
+
+const MessageContext = createContext<MessageContextType | undefined>(undefined);
 
 export function MessageProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState<string | null>(null);
+  const [isPaused, setIsPaused] = useState(false); // メッセージ表示のガード用
 
-  const showMessage = (msg: string) => {
+  const showMessage = (msg: string, delay: number = 2500) => {
+    // isPaused が true の間は showMessage を実行しても何も起きない
+    if (isPaused) return;
+    
     setMessage(msg);
-    setTimeout(() => setMessage(null), 2500);
+    setTimeout(() => setMessage(null), delay);
   };
 
   const hideMessage = () => setMessage(null);
 
   return (
-    <MessageContext.Provider value={{ message, showMessage, hideMessage, MESSAGES }}>
+    <MessageContext.Provider value={{ message, showMessage, hideMessage, setIsPaused, MESSAGES }}>
       {children}
       {message && (
-        <div className="fixed inset-0 flex items-center justify-center z-[100] bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 flex items-center justify-center z-[9999999] bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
           <div className="relative w-full max-w-sm bg-gradient-to-br from-zinc-800 to-black border border-zinc-600 rounded-lg p-8 text-center shadow-2xl">
             <button 
               onClick={hideMessage} 
@@ -51,4 +63,8 @@ export function MessageProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export const useMessage = () => useContext(MessageContext);
+export const useMessage = () => {
+  const context = useContext(MessageContext);
+  if (!context) throw new Error("useMessage must be used within MessageProvider");
+  return context;
+};

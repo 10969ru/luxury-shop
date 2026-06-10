@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { useMessage } from "../context/MessageContext";
+import { useConsent } from "../context/ConsentContext"; // 追加
 
 export default function MyPage() {
   const [activeTab, setActiveTab] = useState("menu");
@@ -10,8 +11,9 @@ export default function MyPage() {
   const [displayName, setDisplayName] = useState("名もなき者");
   const router = useRouter();
   const { showMessage, MESSAGES } = useMessage();
+  const { setIsAgreed, setShowFog } = useConsent(); // 追加
 
-useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !user.email) {
@@ -19,36 +21,34 @@ useEffect(() => {
         return;
       }
 
-      console.log("ログイン中のメールアドレス:", user.email);
-
-      // ★修正：user_id ではなく email (usernameカラム) で検索する
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
         .select('display_name')
         .eq('username', user.email) 
         .maybeSingle();
 
-      console.log("検索結果:", profile);
-
-      if (profile && profile.display_name) {
+      if (profile?.display_name) {
         setDisplayName(profile.display_name);
       }
 
-      // 購入履歴も同様に email で検索するように設計を見直す必要があります
       const { data: orderData } = await supabase
         .from('purchase_history')
         .select('id, item_name, amount, created_at, image_url')
-        .eq('user_id', user.id) // user_id カラムがない場合はここを email に
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (orderData) {
-        setOrders(orderData);
-      }
+      if (orderData) setOrders(orderData);
     };
     fetchData();
   }, [router]);
 
   const handleSignOut = async () => {
+    // 【重要】ログアウト時に状態をリセットして霧フラグを完全にOFFにする
+    setIsAgreed(false);
+    setShowFog(false);
+    localStorage.removeItem('hasAgreed');
+    sessionStorage.removeItem('hasVisited'); // 訪問歴もリセットする場合
+
     await supabase.auth.signOut();
     showMessage(MESSAGES.LOGOUT);
     setTimeout(() => router.push("/"), 1500);

@@ -1,35 +1,29 @@
 "use client";
-// 以下の書き方に修正してみてください
-import { useConsent } from "@/context/ConsentContext";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useConsent } from "@/context/ConsentContext";
 
 export default function FogEffect() {
   const [shouldShow, setShouldShow] = useState(false);
   const [isFading, setIsFading] = useState(false);
-  const pathname = usePathname();
-  const { isAgreed } = useConsent(); // 同意状態を取得
+  
+  // ConsentContextから制御フックを取得
+  const { isAgreed, showFog, setShowFog } = useConsent();
 
   useEffect(() => {
-    // 1. 同意していない場合は、霧の演出を開始しない
-    if (!isAgreed) {
-      setShouldShow(false);
-      return;
-    }
-
-    // 2. 同意済みであれば、霧の演出を開始
-    // (トップページかつ未訪問の場合のみ)
-    if (pathname === "/" && !sessionStorage.getItem("hasVisited")) {
+    // 霧の起動条件:
+    // 1. 同意済みであること
+    // 2. showFog が true であること (ログイン/同意後の予約)
+    if (isAgreed && showFog) {
       setShouldShow(true);
       setIsFading(false);
 
-      // 霧が晴れ始める時間: 3秒後
+      // 霧が薄まり始める (3秒後)
       const fadeTimer = setTimeout(() => setIsFading(true), 3000);
-
-      // 完全に消える時間: 8秒後
+      
+      // 霧が完全に終了する (8秒後)
       const endTimer = setTimeout(() => {
         setShouldShow(false);
-        sessionStorage.setItem("hasVisited", "true");
+        setShowFog(false); // ★重要: 予約をリセットして再発動を防止
       }, 8000);
 
       return () => {
@@ -37,7 +31,7 @@ export default function FogEffect() {
         clearTimeout(endTimer);
       };
     }
-  }, [pathname, isAgreed]); // isAgreed が変わるたびに再判定
+  }, [isAgreed, showFog, setShowFog]);
 
   if (!shouldShow) return null;
 
