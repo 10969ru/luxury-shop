@@ -8,38 +8,65 @@ const CartContext = createContext<any>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<any[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
   const { showMessage } = useMessage();
 
-  const getStorageKey = (userId: string | null) => {
-    return userId ? `cart_${userId}` : "cart_guest";
-  };
+  const getStorageKey = (userId: string | null) =>
+    userId ? `cart_${userId}` : "cart_guest";
 
-  const readLocalCart = (userId: string | null): any[] => {
-    try {
-      const saved = localStorage.getItem(getStorageKey(userId));
-      if (!saved) return [];
+  const saveCart = async (userId: string, nextCart: any[]) => {
+    localStorage.setItem(getStorageKey(userId), JSON.stringify(nextCart));
 
-      const parsed = JSON.parse(saved);
-      if (!Array.isArray(parsed)) return [];
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("username, display_name")
+      .eq("id", userId)
+      .maybeSingle();
 
-      return parsed;
-    } catch {
-      return [];
+    if (profileError) {
+      console.error("cart profile fetch error:", profileError);
     }
+
+    const { error: deleteError } = await supabase
+      .from("cart")
+      .delete()
+      .eq("user_id", userId);
+
+    if (deleteError) {
+      console.error("cart delete error:", deleteError);
+      return;
+    }
+
+    if (nextCart.length === 0) return;
+
+    const itemsToInsert = nextCart.map((item) => ({
+      user_id: userId,
+      product_id: Number(item.product_id ?? item.id),
+      quantity: item.quantity || 1,
+      username: profile?.username ?? "",
+      display_name: profile?.display_name ?? "",
+      product_name: item.product_name ?? item.name ?? "",
+      price: item.price ?? "0",
+      detail_img: item.detail_img ?? item.detailImg ?? null,
+    }));
+
+    const { error: insertError } = await supabase
+      .from("cart")
+      .insert(itemsToInsert);
+
+    if (insertError) {
+      console.error("cart insert error:", JSON.stringify(insertError, null, 2));
+      return;
+    }
+
+    console.log("cart saved:", itemsToInsert);
   };
 
   const loadCart = async (userId: string | null) => {
-    setIsLoaded(false);
     setCurrentUserId(userId);
 
-    const localCart = readLocalCart(userId);
-
     if (!userId) {
-      setCart(localCart);
-      setIsLoaded(true);
+      setCart([]);
       return;
     }
 
@@ -49,16 +76,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       .eq("user_id", userId);
 
     if (error) {
-      setCart(localCart);
-      setIsLoaded(true);
+      console.error("cart load error:", error);
       return;
     }
 
-    const dbCart = data || [];
+    const dbCart =
+      data?.map((item) => ({
+        ...item,
+        id: Number(item.product_id),
+        product_id: Number(item.product_id),
+        name: item.product_name,
+        price: item.price,
+        detailImg: item.detail_img,
+        detail_img: item.detail_img,
+        quantity: item.quantity || 1,
+      })) || [];
+
+    console.log("cart loaded:", dbCart);
 
     setCart(dbCart);
     localStorage.setItem(getStorageKey(userId), JSON.stringify(dbCart));
-    setIsLoaded(true);
   };
 
   useEffect(() => {
@@ -83,29 +120,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    const syncCart = async () => {
-      localStorage.setItem(getStorageKey(currentUserId), JSON.stringify(cart));
-
-      if (!currentUserId) return;
-
-      await supabase.from("cart").delete().eq("user_id", currentUserId);
-
-      if (cart.length > 0) {
-        const itemsToInsert = cart.map((item) => ({
-          ...item,
-          user_id: currentUserId,
-        }));
-
-        await supabase.from("cart").insert(itemsToInsert);
-      }
-    };
-
-    syncCart();
-  }, [cart, isLoaded, currentUserId]);
-
   const addToCart = async (product: any, quantity: number) => {
     const {
       data: { user },
@@ -117,16 +131,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     setCart((prevCart) => {
-      const existingIndex = prevCart.findIndex((item) => item.id === product.id);
+      const existingIndex = prevCart.findIndex(
+        (item) => Number(item.id) === Number(product.id)
+      );
+
+      const nextCart = [...prevCart];
 
       if (existingIndex > -1) {
-        const newCart = [...prevCart];
-        newCart[existingIndex].quantity =
-          (newCart[existingIndex].quantity || 1) + quantity;
-        return newCart;
+        nextCart[existingIndex] = {
+          ...nextCart[existingIndex],
+          quantity: (nextCart[existingIndex].quantity || 1) + quantity,
+        };
+      } else {
+        nextCart.push({
+          ...product,
+          id: Number(product.id),
+          product_id: Number(product.id),
+          quantity,
+        });
       }
 
-      return [...prevCart, { ...product, quantity }];
+      saveCart(user.id, nextCart);
+      return nextCart;
     });
 
     showMessage("禁忌具を祭壇へ移した。");
@@ -143,42 +169,61 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     setCart((prevCart) => {
-      const updatedCart = [...prevCart];
+      const nextCart = [...prevCart];
 
       products.forEach((product) => {
-        const existingIndex = updatedCart.findIndex(
-          (item) => item.id === product.id
+        const existingIndex = nextCart.findIndex(
+          (item) => Number(item.id) === Number(product.id)
         );
 
         if (existingIndex > -1) {
-          updatedCart[existingIndex].quantity =
-            (updatedCart[existingIndex].quantity || 1) + 1;
+          nextCart[existingIndex] = {
+            ...nextCart[existingIndex],
+            quantity: (nextCart[existingIndex].quantity || 1) + 1,
+          };
         } else {
-          updatedCart.push({ ...product, quantity: 1 });
+          nextCart.push({
+            ...product,
+            id: Number(product.id),
+            product_id: Number(product.id),
+            quantity: 1,
+          });
         }
       });
 
-      return updatedCart;
+      saveCart(user.id, nextCart);
+      return nextCart;
     });
 
     showMessage("禁忌具を祭壇へ移した。");
   };
 
   const removeFromCart = (index: number) => {
-    setCart((prev) => prev.filter((_, i) => i !== index));
+    if (!currentUserId) return;
+
+    setCart((prev) => {
+      const nextCart = prev.filter((_, i) => i !== index);
+      saveCart(currentUserId, nextCart);
+      return nextCart;
+    });
   };
 
   const updateQuantity = (id: string, delta: number) => {
-    setCart((prev) =>
-      prev.map((item) =>
-        item.id === id
+    if (!currentUserId) return;
+
+    setCart((prev) => {
+      const nextCart = prev.map((item) =>
+        Number(item.id) === Number(id)
           ? {
               ...item,
               quantity: Math.max(1, (item.quantity || 1) + delta),
             }
           : item
-      )
-    );
+      );
+
+      saveCart(currentUserId, nextCart);
+      return nextCart;
+    });
   };
 
   return (
