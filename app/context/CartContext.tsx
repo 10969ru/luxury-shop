@@ -92,6 +92,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         quantity: item.quantity || 1,
       })) || [];
 
+      
+
     console.log("cart loaded:", dbCart);
 
     setCart(dbCart);
@@ -158,45 +160,47 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     showMessage("禁忌具を祭壇へ移した。");
   };
 
-  const addMultipleToCart = async (products: any[]) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+const addMultipleToCart = async (products: any[], silent = false) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      showMessage("祭壇へ移すには\n契約(SIGN IN)が必要だ。\n");
-      return;
-    }
+  if (!user) {
+    showMessage("祭壇へ移すには\n契約(SIGN IN)が必要だ。\n");
+    return;
+  }
 
-    setCart((prevCart) => {
-      const nextCart = [...prevCart];
+  setCart((prevCart) => {
+    const nextCart = [...prevCart];
 
-      products.forEach((product) => {
-        const existingIndex = nextCart.findIndex(
-          (item) => Number(item.id) === Number(product.id)
-        );
+    products.forEach((product) => {
+      const existingIndex = nextCart.findIndex(
+        (item) => Number(item.id) === Number(product.id)
+      );
 
-        if (existingIndex > -1) {
-          nextCart[existingIndex] = {
-            ...nextCart[existingIndex],
-            quantity: (nextCart[existingIndex].quantity || 1) + 1,
-          };
-        } else {
-          nextCart.push({
-            ...product,
-            id: Number(product.id),
-            product_id: Number(product.id),
-            quantity: 1,
-          });
-        }
-      });
-
-      saveCart(user.id, nextCart);
-      return nextCart;
+      if (existingIndex > -1) {
+        nextCart[existingIndex] = {
+          ...nextCart[existingIndex],
+          quantity: (nextCart[existingIndex].quantity || 1) + 1,
+        };
+      } else {
+        nextCart.push({
+          ...product,
+          id: Number(product.id),
+          product_id: Number(product.id),
+          quantity: 1,
+        });
+      }
     });
 
+    saveCart(user.id, nextCart);
+    return nextCart;
+  });
+
+  if (!silent) {
     showMessage("禁忌具を祭壇へ移した。");
-  };
+  }
+};
 
   const removeFromCart = (index: number) => {
     if (!currentUserId) return;

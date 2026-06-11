@@ -23,7 +23,7 @@ export default function WishlistPage() {
   const handleMoveAllToCart = () => {
     if (wishItems.length === 0) return;
 
-    addMultipleToCart(wishItems);
+    addMultipleToCart(wishItems, true);
     const idsToRemove = wishItems.map(p => p.id);
     removeFromWishlist(idsToRemove);
     showMessage(MESSAGES.CART_ADD_MULTIPLE);
