@@ -13,24 +13,6 @@ export default function LoginPage() {
   const { setIsAgreed, setShowFog } = useConsent();
   const router = useRouter();
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      showMessage("先にメールアドレスを入力してね");
-      return;
-    }
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://luxury-shop-teal.vercel.app/reset-password",
-    });
-
-    if (error) {
-      showMessage(MESSAGES.AUTH_ERROR);
-      return;
-    }
-
-    showMessage("リセットメールを送信したよ");
-  };
-
   const handleSignUp = async () => {
     const { error } = await supabase.auth.signUp({
       email,

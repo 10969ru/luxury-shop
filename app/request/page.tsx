@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useRouter } from "next/navigation";
@@ -10,12 +11,26 @@ export default function RequestPage() {
   const router = useRouter();
   const { showMessage, MESSAGES } = useMessage();
 
+  const getJstDateTimeString = () => {
+    return new Intl.DateTimeFormat("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }).format(new Date());
+  };
+
   const handleSubmit = async () => {
     if (!content.trim()) return;
+
     setLoading(true);
 
     const {
-      data: { user }
+      data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
@@ -25,26 +40,22 @@ export default function RequestPage() {
       return;
     }
 
-    const username =
-      user.user_metadata?.username ??
-      user.email ??
-      "名無し";
+    const username = user.user_metadata?.username ?? user.email ?? "名無し";
 
     const displayName =
-      user.user_metadata?.display_name ??
-      user.user_metadata?.name ??
-      "名無し";
+      user.user_metadata?.display_name ?? user.user_metadata?.name ?? "名無し";
+
+    const requestedAtJst = getJstDateTimeString();
 
     const insertData = {
       user_id: user.id,
-      content: content,
-      username: username,
-      display_name: displayName
+      content,
+      username,
+      display_name: displayName,
+      requested_at_jst: requestedAtJst,
     };
 
-    const { error } = await supabase
-      .from("requests")
-      .insert(insertData);
+    const { error } = await supabase.from("requests").insert(insertData);
 
     if (error) {
       console.error("詳細エラー:", JSON.stringify(error, null, 2));
@@ -56,7 +67,7 @@ export default function RequestPage() {
     await fetch("https://api.web3forms.com/submit", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         access_key: "14d228de-8bd0-4cdb-bfb3-105249ca7ef6",
@@ -66,8 +77,9 @@ export default function RequestPage() {
         username,
         display_name: displayName,
         user_id: user.id,
-        content
-      })
+        content,
+        requested_at_jst: requestedAtJst,
+      }),
     });
 
     setLoading(false);
