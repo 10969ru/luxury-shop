@@ -25,11 +25,10 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    // 成功時
     setMessage({ text: "契約鍵の再刻印を完了した。", isError: false });
     setLoading(false);
 
-    // 少しメッセージを見せてから遷移
+    // 成功した場合は少し待ってからログイン画面へ遷移
     setTimeout(() => {
       router.push("/login");
     }, 2000);
@@ -44,13 +43,12 @@ export default function ResetPasswordPage() {
         placeholder="新たなる鍵"
         className="p-2 mb-4 bg-zinc-900 border border-zinc-700 w-64"
         onChange={(e) => setPassword(e.target.value)}
-        disabled={loading}
       />
 
       <button
         onClick={handleUpdate}
-        disabled={loading || !password}
-        className="border px-6 py-2 hover:bg-white hover:text-black mb-4 disabled:opacity-50"
+        disabled={loading}
+        className="border px-6 py-2 hover:bg-white hover:text-black mb-4"
       >
         {loading ? "刻印中..." : "刻印"}
       </button>
