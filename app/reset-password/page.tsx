@@ -5,21 +5,34 @@ import { useRouter } from "next/navigation";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ text: string; isError: boolean } | null>(null);
   const router = useRouter();
 
   const handleUpdate = async () => {
+    if (!password) return;
+
+    setLoading(true);
+    setMessage(null);
+
     const { error } = await supabase.auth.updateUser({
-      password
+      password: password,
     });
 
     if (error) {
-      alert(error.message);
+      setLoading(false);
+      setMessage({ text: "刻印失敗: " + error.message, isError: true });
       return;
     }
 
-    alert("契約鍵の再刻印を完了した。");
+    // 成功時
+    setMessage({ text: "契約鍵の再刻印を完了した。", isError: false });
+    setLoading(false);
 
-    router.push("/login");
+    // 少しメッセージを見せてから遷移
+    setTimeout(() => {
+      router.push("/login");
+    }, 2000);
   };
 
   return (
@@ -31,14 +44,23 @@ export default function ResetPasswordPage() {
         placeholder="新たなる鍵"
         className="p-2 mb-4 bg-zinc-900 border border-zinc-700 w-64"
         onChange={(e) => setPassword(e.target.value)}
+        disabled={loading}
       />
 
       <button
         onClick={handleUpdate}
-        className="border px-6 py-2 hover:bg-white hover:text-black"
+        disabled={loading || !password}
+        className="border px-6 py-2 hover:bg-white hover:text-black mb-4 disabled:opacity-50"
       >
-        刻印
+        {loading ? "刻印中..." : "刻印"}
       </button>
+
+      {/* メッセージ表示エリア */}
+      {message && (
+        <p className={`text-sm w-64 text-center ${message.isError ? "text-red-500" : "text-zinc-400"}`}>
+          {message.text}
+        </p>
+      )}
     </div>
   );
 }
