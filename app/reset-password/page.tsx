@@ -19,7 +19,6 @@ export default function ResetPasswordPage() {
 
     alert("契約鍵の再刻印を完了した。");
 
-    // 👉 ここ追加
     router.push("/login");
   };
 
